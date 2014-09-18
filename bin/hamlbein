@@ -1,0 +1,75 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'bundler/setup'
+
+require 'fileutils'
+require 'haml'
+require 'json'
+require 'optparse'
+
+options = {}
+
+opt_parser = OptionParser.new do |opt|
+  opt.banner = "Usage: hamlbein [OPTIONS] path_to_template"
+  opt.separator  ""
+  opt.separator  ""
+  opt.separator  "Options"
+
+  opt.on("-l","--layout path_to_layout","layout to be compiled") do |layout|
+    options[:layout] = layout
+  end
+
+  opt.on("-c","--context json_data","context data to be compiled") do |context|
+    options[:context] = context
+  end
+
+  opt.on("-h","--help","help") do
+    puts opt_parser
+  end
+end
+
+opt_parser.parse!
+
+options[:context]       ||= JSON.generate({})
+
+options[:template] = ARGV[0]
+options[:file]     = ARGV[1]
+
+class HamlBein
+  def initialize(options={})
+    @options      = options
+
+    @file         = options[:file]
+    @layout       = Haml::Engine.new(File.read(options[:layout])) unless options[:layout].nil?
+    @template     = Haml::Engine.new(File.read(options[:template]))
+    @context      = JSON.parse(options[:context])
+  end
+
+  def compile
+    output = if !@layout.nil?
+      compile_with_layout
+    else
+      compile_single
+    end
+
+    create_file(output)
+  end
+
+  def compile_with_layout
+    @layout.render Object.new, @context do
+      compile_single
+    end
+  end
+
+  def compile_single
+    @template.render Object.new, @context
+  end
+
+  def create_file(output)
+    FileUtils.mkdir_p(File.dirname(@file))
+    File.new(@file, File::CREAT|File::RDWR).write(output)
+  end
+end
+
+HamlBein.new(options).compile
