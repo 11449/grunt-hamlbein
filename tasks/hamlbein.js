@@ -9,7 +9,8 @@
 'use strict';
 
 module.exports = function(grunt) {
-  var async = grunt.util.async;
+  var async = grunt.util.async,
+      path  = require('path');
 
   grunt.registerMultiTask('hamlbein', 'compile haml files with ruby haml wrapper', function() {
     var args         = [],
@@ -18,8 +19,7 @@ module.exports = function(grunt) {
           context:             false,
           includePath:         false,
           layout:              false,
-          pathRelativeTo:      './',
-          rubyHamlBeinCommand: './bin/hamlbein'
+          rubyHamlBeinCommand: 'bin/hamlbein'
         });
 
     grunt.verbose.writeflags(options, 'Options');
@@ -44,13 +44,13 @@ module.exports = function(grunt) {
         args.push('--context', JSON.stringify(options.context));
       }
 
-      args.push([options.pathRelativeTo, src].join(''));
-      args.push([options.pathRelativeTo, file.dest].join(''));
+      args.push(path.resolve(process.cwd(), src[0]));
+      args.push(path.resolve(process.cwd(), file.dest));
 
       grunt.verbose.debug(args.join(' '));
 
       grunt.util.spawn({
-        cmd:  options.rubyHamlBeinCommand,
+        cmd:  path.resolve(__dirname, '..', options.rubyHamlBeinCommand),
         args: args,
       }, function done() {
         grunt.verbose.writeflags(arguments, 'arguments');
