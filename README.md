@@ -3,6 +3,10 @@ grunt-hamlbein
 
 > compile haml files with ruby haml wrapper
 
+## Build status
+
+![](https://codeship.com/projects/fffb1e40-6902-0132-42ab-1a44e1163757/status?branch=master)
+
 ## Getting Started
 This plugin requires Grunt `~0.4.5`
 
